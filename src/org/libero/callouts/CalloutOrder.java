@@ -146,7 +146,8 @@ public class CalloutOrder extends CalloutEngine
 		I_PP_Product_Planning pp = getPP_Product_Planning(ctx, order);
 		order.setAD_Workflow_ID(pp.getAD_Workflow_ID());
 		order.setPP_Product_BOM_ID(pp.getPP_Product_BOM_ID());
-		
+		int ppbid=pp.getPP_Product_BOM_ID();
+		int wfid=pp.getAD_Workflow_ID();
 		if (pp.getPP_Product_BOM_ID() > 0)
 		{
 			I_PP_Product_BOM bom = pp.getPP_Product_BOM();

@@ -1028,6 +1028,8 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	private void explosion()
 	{
 		// Create BOM Head
+		int pid=getM_Product_ID();
+		int pbid=getPP_Product_BOM_ID();
 		final MPPProductBOM PP_Product_BOM = MPPProductBOM.get(getCtx(), getPP_Product_BOM_ID());
 		//iterate Product BOM components as more Parent tab records
 		
@@ -1060,7 +1062,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		// Workflow should be validated first - teo_sarca [ 2817870 ]
 		if (!AD_Workflow.isValid())
 		{
-			throw new AdempiereException("Routing is not valid. Please validate it first - "+AD_Workflow.getValue()); // 
+				throw new AdempiereException("Routing is not valid. Please validate it first - "+AD_Workflow.getValue()); // 
 		}
 		if (AD_Workflow.isValidFromTo(getDateStartSchedule()))
 		{
