@@ -43,7 +43,7 @@ public class MPPOrderBOMLine extends X_PP_Order_BOMLine
 		//TODO: vpj-cd What happen when a product it more the time in Order
 		final String whereClause = COLUMNNAME_PP_Order_ID+"=? AND "+COLUMNNAME_M_Product_ID+"=?";
 		return new Query(ctx, Table_Name, whereClause, trxName)
-			.setParameters(PP_Order_ID, M_Product_ID)
+			.setParameters(PP_Order_ID, M_Product_ID).setClient_ID()
 			.firstOnly();
 	}
 	
@@ -419,7 +419,7 @@ public class MPPOrderBOMLine extends X_PP_Order_BOMLine
 		+" AND "+I_PP_Cost_Collector.COLUMNNAME_DocStatus+" IN (?,?)"
 		+" AND "+I_PP_Cost_Collector.COLUMNNAME_CostCollectorType+"=?"
 		;
-		BigDecimal qtyUsageVariance = new Query(getCtx(), I_PP_Cost_Collector.Table_Name, whereClause, get_TrxName())
+		BigDecimal qtyUsageVariance = new Query(getCtx(), I_PP_Cost_Collector.Table_Name, whereClause, get_TrxName()).setClient_ID()
 		.setParameters(new Object[]{
 				getPP_Order_BOMLine_ID(),
 				getPP_Order_ID(),

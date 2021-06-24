@@ -31,7 +31,6 @@ import org.compiere.model.MProduct;
 import org.compiere.model.MProject;
 import org.compiere.model.MResource;
 import org.compiere.model.MStorageOnHand;
-import org.compiere.model.MStorageReservation;
 import org.compiere.model.MTable;
 import org.compiere.model.MUOM;
 import org.compiere.model.MWarehouse;
@@ -61,7 +60,6 @@ import org.libero.tables.I_PP_Order_BOMLine;
 import org.libero.tables.I_PP_Order_Node; 
 import org.libero.tables.X_PP_Order_Node_Asset;
 import org.libero.tables.X_PP_Order_Node_Product;
-import org.libero.model.MRequisition;
 /**
  *  PP Order Model.
  *
@@ -82,7 +80,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	public static MPPOrder forC_OrderLine_ID(Properties ctx, int C_OrderLine_ID, String trxName)
 	{
 		MOrderLine line = new MOrderLine(ctx,  C_OrderLine_ID, trxName);	
-		return new Query(ctx, MPPOrder.Table_Name, COLUMNNAME_C_OrderLine_ID+"=? AND "+ COLUMNNAME_M_Product_ID+"=?", trxName)
+		return new Query(ctx, MPPOrder.Table_Name, COLUMNNAME_C_OrderLine_ID+"=? AND "+ COLUMNNAME_M_Product_ID+"=?", trxName).setClient_ID()
 								.setParameters(new Object[]{C_OrderLine_ID,line.getM_Product_ID()})
 								.firstOnly();
 	}
@@ -345,7 +343,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			return m_lines;
 		}
 		String whereClause = MPPOrderBOMLine.COLUMNNAME_PP_Order_ID+"=?";
-		List<MPPOrderBOMLine> list = new Query(getCtx(), MPPOrderBOMLine.Table_Name, whereClause, get_TrxName())
+		List<MPPOrderBOMLine> list = new Query(getCtx(), MPPOrderBOMLine.Table_Name, whereClause, get_TrxName()).setClient_ID()
 										.setParameters(new Object[]{getPP_Order_ID()})
 										.setOrderBy(MPPOrderBOMLine.COLUMNNAME_Line)
 										.list();
@@ -663,7 +661,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 		if (doc.getDocBaseType().equals(MDocType.DOCBASETYPE_QualityOrder))
 		{
 			String whereClause = COLUMNNAME_PP_Product_BOM_ID+"=? AND "+COLUMNNAME_AD_Workflow_ID+"=?";
-			MQMSpecification qms = new Query(getCtx(), MQMSpecification.Table_Name, whereClause, get_TrxName())
+			MQMSpecification qms = new Query(getCtx(), MQMSpecification.Table_Name, whereClause, get_TrxName()).setClient_ID()
 										.setParameters(new Object[]{getPP_Product_BOM_ID(), getAD_Workflow_ID()})
 										.firstOnly();
 			return qms != null ? qms.isValid(getM_AttributeSetInstance_ID()) : true;
@@ -736,7 +734,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	public boolean isAvailable()
 	{
 		String whereClause = "QtyOnHand >= QtyRequired AND PP_Order_ID=?";
-		boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName())
+		boolean available = new Query(getCtx(), "RV_PP_Order_Storage", whereClause, get_TrxName()).setClient_ID()
 										.setParameters(new Object[]{get_ID()})
 										.match();
 		return available;
@@ -937,7 +935,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	
 	private void deletePO(String tableName, String whereClause, Object[] params)
 	{
-		POResultSet<PO> rs = new Query(getCtx(), tableName, whereClause, get_TrxName())
+		POResultSet<PO> rs = new Query(getCtx(), tableName, whereClause, get_TrxName()).setClient_ID()
 									.setParameters(params)
 									.scroll();
 		try
@@ -1001,7 +999,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 	public MPPOrderBOM getMPPOrderBOM()
 	{
 		final String whereClause = MPPOrderBOM.COLUMNNAME_PP_Order_ID+"=?";
-		return new Query(getCtx(), MPPOrderBOM.Table_Name, whereClause, get_TrxName())
+		return new Query(getCtx(), MPPOrderBOM.Table_Name, whereClause, get_TrxName()).setClient_ID()
 				.setParameters(new Object[]{getPP_Order_ID()})
 				.firstOnly();
 	}
@@ -1015,7 +1013,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			return m_PP_Order_Workflow;
 		}
 		final String whereClause = MPPOrderWorkflow.COLUMNNAME_PP_Order_ID+"=?";
-		m_PP_Order_Workflow = new Query(getCtx(), MPPOrderWorkflow.Table_Name, whereClause, get_TrxName())
+		m_PP_Order_Workflow = new Query(getCtx(), MPPOrderWorkflow.Table_Name, whereClause, get_TrxName()).setClient_ID()
 				.setParameters(new Object[]{getPP_Order_ID()})
 				.firstOnly();
 		return m_PP_Order_Workflow;
@@ -1174,7 +1172,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
  		if (product.isPurchased()){
 			log.finer("CLASS PPOrder.explosion product is purchased, check stock/creating requisition");
 			
-			MPPMRP mrp = new Query(Env.getCtx(),MPPMRP.Table_Name,MPPMRP.COLUMNNAME_PP_Order_ID+"=?",get_TrxName())
+			MPPMRP mrp = new Query(Env.getCtx(),MPPMRP.Table_Name,MPPMRP.COLUMNNAME_PP_Order_ID+"=?",get_TrxName()).setClient_ID()
 			.setParameters(getPP_Order_ID())
 			.first();
 
@@ -1517,7 +1515,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			final CostDimension d = new CostDimension(product, as, as.getM_CostType_ID(),
 												getAD_Org_ID(), getM_AttributeSetInstance_ID(),
 												CostDimension.ANY);
-			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
+			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).setClient_ID().list();
 			for (MCost cost : costs)
 			{
 				MPPOrderCost PP_Order_Cost = new MPPOrderCost(cost, get_ID(), get_TrxName());
@@ -1540,7 +1538,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 			CostDimension d = new CostDimension(line.getM_Product(), as, as.getM_CostType_ID(),
 												line.getAD_Org_ID(), line.getM_AttributeSetInstance_ID(),
 												CostDimension.ANY);
-			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
+			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).setClient_ID().list();
 			for (MCost cost : costs)
 			{
 				MPPOrderCost PP_Order_Cost = new MPPOrderCost(cost, get_ID(), get_TrxName());
@@ -1568,7 +1566,7 @@ public class MPPOrder extends X_PP_Order implements DocAction
 					node.getAD_Org_ID(),
 					0, // ASI
 					CostDimension.ANY);
-			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).list();
+			Collection<MCost> costs = d.toQuery(MCost.class, get_TrxName()).setClient_ID().list();
 			for (MCost cost : costs)
 			{
 				MPPOrderCost orderCost = new MPPOrderCost(cost, getPP_Order_ID(), get_TrxName());
